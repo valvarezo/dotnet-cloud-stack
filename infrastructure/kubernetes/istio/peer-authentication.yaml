@@ -1,0 +1,29 @@
+# =============================================================================
+# PeerAuthentication - Configuración de mTLS
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: finance-app
+spec:
+  mtls:
+    mode: STRICT
+---
+# =============================================================================
+# PeerAuthentication específico para PostgreSQL
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: postgres-mtls
+  namespace: finance-app
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  mtls:
+    mode: STRICT
+  portLevelMtls:
+    "5432":
+      mode: STRICT

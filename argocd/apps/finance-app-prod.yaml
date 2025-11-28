@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: finance-app-prod
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/name: finance-app
+    environment: production
+spec:
+  project: finance-app
+  
+  source:
+    repoURL: https://github.com/valvarezo/dotnet-cloud-stack.git 
+    targetRevision: main
+    path: infrastructure/kubernetes/overlays/prod
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: finance-app
+  
+  syncPolicy:
+    # Manual sync for production
+    automated: null
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m
+  
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+      jsonPointers:
+        - /spec/minReplicas
+        - /spec/maxReplicas
+  
+  revisionHistoryLimit: 10

@@ -1,0 +1,23 @@
+# =============================================================================
+# Service - PostgreSQL
+# =============================================================================
+# ClusterIP interno - NO expuesto públicamente
+# Puerto nombrado con prefijo tcp- para Istio
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: finance-app
+  labels:
+    app: postgres
+    tier: database
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+    - name: tcp-postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP

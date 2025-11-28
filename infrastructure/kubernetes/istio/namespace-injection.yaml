@@ -1,0 +1,11 @@
+# =============================================================================
+# Namespace con inyección automática de Istio
+# =============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: finance-app
+  labels:
+    istio-injection: enabled
+    app.kubernetes.io/name: finance-app
+    app.kubernetes.io/part-of: finance-cloud-stack

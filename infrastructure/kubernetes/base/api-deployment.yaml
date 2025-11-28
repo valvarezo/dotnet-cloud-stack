@@ -1,0 +1,74 @@
+# =============================================================================
+# Deployment - Finance API (.NET 9)
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finance-api
+  namespace: finance-app
+  labels:
+    app: finance-api
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: finance-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: finance-api
+        tier: backend
+    spec:
+      serviceAccountName: finance-api-sa
+      containers:
+        - name: finance-api
+          image: finance-api:v2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: finance-api-config
+                  key: ASPNETCORE_ENVIRONMENT
+            - name: ASPNETCORE_URLS
+              valueFrom:
+                configMapKeyRef:
+                  name: finance-api-config
+                  key: ASPNETCORE_URLS
+            - name: CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: CONNECTION_STRING
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

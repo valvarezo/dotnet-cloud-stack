@@ -1,0 +1,85 @@
+# =============================================================================
+# AuthorizationPolicy - Control de acceso entre servicios
+# =============================================================================
+# Define qué servicios pueden comunicarse con cuáles.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Permitir tráfico desde Ingress hacia Finance API
+# -----------------------------------------------------------------------------
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-ingress-to-api
+  namespace: finance-app
+spec:
+  selector:
+    matchLabels:
+      app: finance-api
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["istio-system"]
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    - from:
+        - source:
+            namespaces: ["ingress-nginx"]
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    - from:
+        - source:
+            namespaces: ["finance-app"]
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    - to:
+        - operation:
+            paths: ["/health", "/health/*"]
+            methods: ["GET"]
+---
+# -----------------------------------------------------------------------------
+# Permitir tráfico desde Finance API hacia PostgreSQL
+# -----------------------------------------------------------------------------
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-api-to-postgres
+  namespace: finance-app
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["finance-app"]
+      to:
+        - operation:
+            ports: ["5432"]
+---
+# -----------------------------------------------------------------------------
+# Permitir tráfico desde Prometheus para métricas
+# -----------------------------------------------------------------------------
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-prometheus-scrape
+  namespace: finance-app
+spec:
+  selector:
+    matchLabels:
+      app: finance-api
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["istio-system"]
+      to:
+        - operation:
+            paths: ["/metrics"]
+            methods: ["GET"]

@@ -1,0 +1,23 @@
+# =============================================================================
+# VirtualService - Control de tráfico interno (mesh)
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: finance-api-internal
+  namespace: finance-app
+spec:
+  hosts:
+    - finance-api
+  http:
+    - name: "finance-api-internal-route"
+      retries:
+        attempts: 3
+        perTryTimeout: 5s
+        retryOn: connect-failure,refused-stream,unavailable,cancelled,5xx
+      timeout: 30s
+      route:
+        - destination:
+            host: finance-api
+            port:
+              number: 80

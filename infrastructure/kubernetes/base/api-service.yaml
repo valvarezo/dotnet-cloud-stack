@@ -1,0 +1,20 @@
+# =============================================================================
+# Service - Finance API
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: finance-api
+  namespace: finance-app
+  labels:
+    app: finance-api
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: finance-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP

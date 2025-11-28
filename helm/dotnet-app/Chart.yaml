@@ -1,0 +1,22 @@
+apiVersion: v2
+name: finance-app
+description: A Helm chart for the Finance Application (.NET API + PostgreSQL)
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - dotnet
+  - api
+  - postgresql
+  - finance
+
+maintainers:
+  - name: DevOps Team
+    email: devops@tiendapago.com
+
+dependencies:
+  - name: postgresql
+    version: "15.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled

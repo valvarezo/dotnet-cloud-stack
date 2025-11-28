@@ -1,0 +1,54 @@
+# =============================================================================
+# Gateway - Punto de entrada para tráfico externo
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: finance-gateway
+  namespace: finance-app
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "app.local"
+        - "finance.local"
+        - "*.finance.local"
+---
+# =============================================================================
+# VirtualService para el Gateway
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: finance-gateway-vs
+  namespace: finance-app
+spec:
+  hosts:
+    - "app.local"
+    - "finance.local"
+  gateways:
+    - finance-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: finance-api.finance-app.svc.cluster.local
+            port:
+              number: 80
+      headers:
+        response:
+          add:
+            x-frame-options: "DENY"
+            x-content-type-options: "nosniff"
+            x-xss-protection: "1; mode=block"
+      retries:
+        attempts: 3
+        perTryTimeout: 10s
+      timeout: 60s

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "finance-app.fullname" . }}-api
+  labels:
+    {{- include "finance-app.labels" . | nindent 4 }}
+    app: finance-api
+spec:
+  {{- if not .Values.api.autoscaling.enabled }}
+  replicas: {{ .Values.api.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "finance-app.selectorLabels" . | nindent 6 }}
+      app: finance-api
+  template:
+    metadata:
+      labels:
+        {{- include "finance-app.selectorLabels" . | nindent 8 }}
+        app: finance-api
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "finance-app.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.api.securityContext | nindent 8 }}
+      containers:
+        - name: api
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.api.service.targetPort }}
+              protocol: TCP
+          env:
+            {{- range $key, $value := .Values.api.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "finance-app.fullname" . }}-secret
+                  key: CONNECTION_STRING
+          livenessProbe:
+            {{- toYaml .Values.api.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.api.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.api.resources | nindent 12 }}

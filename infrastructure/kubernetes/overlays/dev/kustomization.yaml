@@ -1,0 +1,39 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: finance-app-dev
+
+namespace: finance-app
+
+resources:
+  - ../../base
+
+# Patches for development environment
+patches:
+  # Reduce replicas for dev
+  - target:
+      kind: Deployment
+      name: finance-api
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  # Reduce resource limits for dev
+  - target:
+      kind: Deployment
+      name: finance-api
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "128Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "250m"
+
+commonLabels:
+  environment: development
+
+images:
+  - name: finance-api
+    newTag: v2

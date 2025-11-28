@@ -1,0 +1,57 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: finance-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Finance Application Project
+  
+  # Source repositories
+  sourceRepos:
+    - '*'  # In production, specify exact repos
+  
+  # Destination clusters and namespaces
+  destinations:
+    - namespace: finance-app
+      server: https://kubernetes.default.svc
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+  
+  # Allowed cluster resources
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: networking.k8s.io
+      kind: Ingress
+    - group: networking.k8s.io
+      kind: IngressClass
+  
+  # Allowed namespace resources
+  namespaceResourceWhitelist:
+    - group: ''
+      kind: '*'
+    - group: apps
+      kind: '*'
+    - group: networking.k8s.io
+      kind: '*'
+    - group: autoscaling
+      kind: '*'
+  
+  # Roles for RBAC
+  roles:
+    - name: developer
+      description: Developer role
+      policies:
+        - p, proj:finance-app:developer, applications, get, finance-app/*, allow
+        - p, proj:finance-app:developer, applications, sync, finance-app/*, allow
+      groups:
+        - developers
+    
+    - name: admin
+      description: Admin role
+      policies:
+        - p, proj:finance-app:admin, applications, *, finance-app/*, allow
+      groups:
+        - admins

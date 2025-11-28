@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: finance-api-config
+  namespace: finance-app
+  labels:
+    app: finance-api
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ASPNETCORE_URLS: "http://+:8080"
+  # Database configuration (non-sensitive)
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "financedb"
