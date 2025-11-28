@@ -31,8 +31,11 @@ patches:
         path: /spec/template/spec/containers/0/resources/limits/cpu
         value: "250m"
 
-commonLabels:
-  environment: development
+# Usar 'labels' en lugar de 'commonLabels' para evitar que modifique selectores
+labels:
+  - pairs:
+      environment: development
+    includeSelectors: false
 
 images:
   - name: finance-api
