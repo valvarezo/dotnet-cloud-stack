@@ -17,6 +17,8 @@ resources:
   - api-service.yaml
   - ingress.yaml
 
-commonLabels:
-  app.kubernetes.io/part-of: finance-app
-  app.kubernetes.io/managed-by: kustomize
+labels:
+  - pairs:
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/part-of: finance-app
+    includeSelectors: false
