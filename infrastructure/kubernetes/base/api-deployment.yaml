@@ -10,7 +10,7 @@ metadata:
     app: finance-api
     tier: backend
 spec:
-  replicas: 2
+  replicas: 4
   selector:
     matchLabels:
       app: finance-api
